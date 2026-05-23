@@ -1,0 +1,15 @@
+{
+    "id": "roborock",
+    "name": "Roborock",
+    "description": "Plugin pour contrôler les aspirateurs Roborock depuis Jeedom",
+    "licence": "AGPL",
+    "author": "Jeedom",
+    "require": "4.2",
+    "category": "security",
+    "hasDependency": true,
+    "hasOwnDeamon": true,
+    "maxDependancyInstallTime": 60,
+    "changelog": "docs/changelog",
+    "documentation": "docs/index",
+    "issue": ""
+}
