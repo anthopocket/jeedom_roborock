@@ -5,7 +5,7 @@
     "licence": "AGPL",
     "author": "Jeedom",
     "require": "4.2",
-    "category": "security",
+    "category": "devicecommunication",
     "hasDependency": true,
     "hasOwnDeamon": true,
     "maxDependancyInstallTime": 60,
