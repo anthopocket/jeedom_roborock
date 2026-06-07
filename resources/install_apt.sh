@@ -13,7 +13,7 @@ wget https://raw.githubusercontent.com/NebzHB/dependance.lib/master/pyenv.lib \
 [ -f "${BASE_DIR}/pyenv.lib" ] || { echo "Erreur: pyenv.lib introuvable"; exit 1; }
 . "${BASE_DIR}/pyenv.lib"
 
-TARGET_PYTHON_VERSION="3.9"
+TARGET_PYTHON_VERSION="3.11"
 VENV_DIR="${BASE_DIR}/venv"
 
 pre
