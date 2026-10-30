@@ -3,6 +3,8 @@ set_time_limit(60);
 require_once __DIR__ . '/../../../../core/php/core.inc.php';
 ajax::init();
 
+try {
+
 if (init('action') == 'get') {
     $eq = roborock::byId(init('id'));
     if (!is_object($eq)) ajax::error('Equipement introuvable');
@@ -62,8 +64,8 @@ if (init('action') == 'saveEqLogic') {
 if (init('action') == 'recreateCommands') {
     $eq = roborock::byId(init('id'));
     if (!is_object($eq)) ajax::error('Equipement introuvable');
-    $eq->createCommands();
-    ajax::success('Commandes recreees');
+    $created = $eq->createCommands();
+    ajax::success($created . ' commande(s) ajoutee(s), commandes existantes mises a jour');
 }
 
 if (init('action') == 'syncRoutines') {
@@ -226,75 +228,55 @@ if (init('action') == 'synchronize') {
 if (init('action') == 'syncRooms') {
     $eq = roborock::byId(init('id'));
     if (!is_object($eq)) ajax::error('Equipement introuvable');
-    $res = roborock::sendToDaemon([
-        'action'    => 'get_maps',
-        'device_id' => $eq->getConfiguration('device_id'),
-    ]);
-    $maps = $res['maps'] ?? [];
-    $count = 0;
-    foreach ($maps as $map) {
-        foreach ($map['rooms'] as $segId => $roomName) {
-            $logicalId = 'room_' . $segId;
-            $cmd = $eq->getCmd('action', $logicalId);
-            $isNew = !is_object($cmd);
-            if ($isNew) {
-                $cmd = new roborockCmd();
-                $cmd->setLogicalId($logicalId);
-                $cmd->setEqLogic_id($eq->getId());
-                $cmd->setIsVisible(1);
-                $cmd->setName('Piece: ' . $roomName);
-            }
-            $cmd->setType('action');
-            $cmd->setSubType('other');
-            $cmd->setOrder(300 + intval($segId));
-            $cmd->setConfiguration('segment_id', intval($segId));
-            $cmd->save();
-            $count++;
-        }
-    }
+    $count = $eq->syncRooms();
     ajax::success($count . ' piece(s) synchronisee(s)');
 }
 
-if (init('action') == 'syncRooms') {
+if (init('action') == 'getMap') {
     $eq = roborock::byId(init('id'));
     if (!is_object($eq)) ajax::error('Equipement introuvable');
-    $res = roborock::sendToDaemon([
-        'action'    => 'get_maps',
-        'device_id' => $eq->getConfiguration('device_id'),
-    ]);
-    $maps = $res['maps'] ?? [];
-    $count = 0;
-    foreach ($maps as $map) {
-        foreach ($map['rooms'] as $segId => $roomName) {
-            $logicalId = 'room_' . $segId;
-            $cmd = $eq->getCmd('action', $logicalId);
-            $isNew = !is_object($cmd);
-            if ($isNew) {
-                $cmd = new roborockCmd();
-                $cmd->setLogicalId($logicalId);
-                $cmd->setEqLogic_id($eq->getId());
-                $cmd->setIsVisible(1);
-                $cmd->setName('Piece: ' . $roomName);
-            }
-            $cmd->setType('action');
-            $cmd->setSubType('other');
-            $cmd->setOrder(300 + intval($segId));
-            $cmd->setConfiguration('segment_id', intval($segId));
-            $cmd->save();
-            $count++;
+    if (init('refresh') == 1) {
+        $res = roborock::sendToDaemon(['action' => 'refresh_map', 'device_id' => $eq->getConfiguration('device_id')]);
+        if (!empty($res['error'])) ajax::error($res['error']);
+    }
+    $paths = roborock::mapPaths($eq->getConfiguration('device_id'));
+    if (!file_exists($paths['json']) || !file_exists($paths['png'])) {
+        ajax::success(['available' => false]);
+    }
+    $meta = json_decode(file_get_contents($paths['json']), true);
+    $cmds = [];
+    foreach (['clean_zone', 'goto_position', 'clean_segment'] as $lid) {
+        $c = $eq->getCmd('action', $lid);
+        $cmds[$lid] = is_object($c) ? $c->getId() : null;
+    }
+    $rooms = [];
+    foreach ($eq->getCmd('action') as $c) {
+        if (strpos($c->getLogicalId(), 'room_') === 0) {
+            $rooms[strval($c->getConfiguration('segment_id'))] = ['id' => $c->getId(), 'name' => $c->getName()];
         }
     }
-    ajax::success($count . ' piece(s) synchronisee(s)');
+    ajax::success([
+        'available' => true,
+        'meta'      => $meta,
+        'url'       => 'plugins/roborock/core/php/roborockMap.php?id=' . $eq->getId() . '&t=' . filemtime($paths['png']),
+        'cmds'      => $cmds,
+        'roomCmds'  => $rooms,
+    ]);
 }
 
 if (init('action') == 'getRooms') {
     $eq = roborock::byId(init('id'));
     if (!is_object($eq)) ajax::error('Equipement introuvable');
     $res = roborock::sendToDaemon([
-        'action'    => 'get_maps',
+        'action'    => 'get_rooms',
         'device_id' => $eq->getConfiguration('device_id'),
     ]);
+    if (!empty($res['error'])) ajax::error($res['error']);
     ajax::success($res);
 }
 
 ajax::error('Action inconnue : ' . init('action'));
+
+} catch (Exception $e) {
+    ajax::error(displayException($e), $e->getCode());
+}

@@ -1,6 +1,7 @@
 {
     "id": "roborock",
     "name": "Roborock",
+    "pluginVersion": "2.1.0",
     "description": "Plugin pour contrôler les aspirateurs Roborock depuis Jeedom",
     "licence": "AGPL",
     "author": "Jeedom",
