@@ -71,6 +71,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <i class="fas fa-list"></i> {{Commandes}}
                 </a>
             </li>
+            <li role="presentation">
+                <a href="#maptab" aria-controls="profile" role="tab" data-toggle="tab" id="bt_tabMap">
+                    <i class="fas fa-map-marked-alt"></i> {{Carte}}
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -154,6 +159,14 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="device_id" readonly />
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{{Capacités détectées}}
+                                    <sup><i class="fas fa-question-circle tooltips" title="{{Annoncées par le robot. Les commandes d'une capacité absente ne sont pas créées (aucune commande existante n'est supprimée).}}"></i></sup>
+                                </label>
+                                <div class="col-sm-8">
+                                    <textarea class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="capabilities" rows="2" readonly style="font-size:11px;"></textarea>
+                                </div>
+                            </div>
                         </fieldset>
                     </div>
                 </form>
@@ -188,6 +201,32 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     </table>
                 </div>
             </div><!-- /.tabpanel #commandtab -->
+
+            <!-- ─ Onglet Carte ─ -->
+            <div role="tabpanel" class="tab-pane" id="maptab">
+                <br>
+                <div class="form-inline" style="margin-bottom:8px;">
+                    <a class="btn btn-default btn-sm" id="bt_mapRefresh"><i class="fas fa-sync"></i> {{Relire la carte}}</a>
+                    <span style="margin:0 10px;">
+                        <label class="radio-inline"><input type="radio" name="rbMapMode" value="point" checked> {{Point / pièce}}</label>
+                        <label class="radio-inline"><input type="radio" name="rbMapMode" value="zone"> {{Tracer une zone}}</label>
+                    </span>
+                    <label>{{Passages}}</label>
+                    <select class="form-control input-sm" id="sel_mapRepeat" style="width:60px;">
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    </select>
+                    <input type="text" class="form-control input-sm" id="in_mapCoords" readonly style="width:230px;margin-left:10px;" placeholder="{{Cliquez sur la carte}}">
+                    <a class="btn btn-default btn-sm" id="bt_mapCopy" title="{{Copier}}"><i class="far fa-copy"></i></a>
+                    <a class="btn btn-primary btn-sm" id="bt_mapGoto" style="display:none;"><i class="fas fa-map-pin"></i> {{Aller ici}}</a>
+                    <a class="btn btn-success btn-sm" id="bt_mapRoom" style="display:none;"></a>
+                    <a class="btn btn-success btn-sm" id="bt_mapZone" style="display:none;"><i class="fas fa-vector-square"></i> {{Nettoyer la zone}}</a>
+                </div>
+                <div id="div_mapInfo" style="margin-bottom:6px;color:var(--txt-color);opacity:.8;"></div>
+                <div id="div_mapWrap" style="position:relative;display:inline-block;max-width:100%;touch-action:none;">
+                    <img id="img_map" style="display:block;max-width:100%;max-height:75vh;" />
+                    <canvas id="cv_map" style="position:absolute;left:0;top:0;width:100%;height:100%;cursor:crosshair;"></canvas>
+                </div>
+            </div><!-- /.tabpanel #maptab -->
 
         </div><!-- /.tab-content -->
     </div><!-- /.eqLogic -->
